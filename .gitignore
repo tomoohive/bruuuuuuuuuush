@@ -1,0 +1,11 @@
+*.png
+*.jpg
+*.PNG
+*.jpeg
+notebook
+result
+ripper
+crop_data
+mask_data
+crop_mask_data
+__pycache__
