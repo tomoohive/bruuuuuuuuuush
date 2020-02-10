@@ -16,6 +16,11 @@ def applyBinalizeFilterFromImagePath(image_path):
     (thresh, result_image) = cv2.threshold(binalize_image, 0, 255, cv2.THRESH_BINARY)
     return result_image
 
+def applyBinalizeFilterFromImagePath(image):
+    binalize_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    (thresh, result_image) = cv2.threshold(binalize_image, 0, 255, cv2.THRESH_BINARY)
+    return result_image
+
 def applyCannyEdgeDetectionFromImagePath(image_path):
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)
     detector = CannyEdgeDetector(image, sigma=1.4, kernel_size=5, lowthreshold=0.09, highthreshold=0.19, weak_pixel=100)
@@ -23,6 +28,13 @@ def applyCannyEdgeDetectionFromImagePath(image_path):
     image = np.array(imgs_final)
     cv2.imwrite('result/CannyEdge.png', image)
     return 'result/CannyEdge.png'
+
+def applyCannyEdgeDetectionFromImage(image):
+    detector = CannyEdgeDetector(image, sigma=1.4, kernel_size=5, lowthreshold=0.09, highthreshold=0.19, weak_pixel=100)
+    imgs_final = detector.detect()
+    image = np.array(imgs_final)
+    cv2.imwrite('result/CannyEdge.png', image)
+    return image
 
 def applyCannyEdgeDetectionCVFromImagePath(image_path):
     image = cv2.imread(image_path, cv2.IMREAD_COLOR)

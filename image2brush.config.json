@@ -1,0 +1,23 @@
+{
+    "input_image": "./input.png",
+    "filtering": "bilateral",
+    "first_step": {
+        "method": "morphological"
+    },
+    "_first_step": {
+        "method": "k-means",
+        "L_weight": 1,
+        "A_weight": 1,
+        "B_weight": 1
+    },
+    "second_step": {
+        "method": "coordinate"
+    },
+    "_second_step": {
+        "method": "coordinateHS",
+        "H_weight": 1,
+        "S_weight": 1
+    },
+    "output_dir": "output",
+    "feathering": 3
+}
