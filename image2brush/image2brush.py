@@ -2,24 +2,31 @@ import argparse
 import json
 import dataclasses
 import enum
+import numpy
+
+from abc import abstractmethod
 
 from .ImageProcessing import *
+from .KMeansCluster import *
+from .CropTextures import *
 
 @dataclasses.dataclass
 class Filtering:
-    image: str
+    image_path: str
 
+    @abstractmethod
     def apply_filtering(self):
         pass
 
 class GaussianFilter(Filtering):
     def apply_filtering(self):
-        blur_image = applyGaussianFilterFromImagePath(self.image, 5)
+        blur_image = applyGaussianFilterFromImagePath(self.image_path, 5)
         return blur_image
 
 class BilateralFilter(Filtering):
     def apply_filtering(self):
-        blur_image = blur_image = applyBilateralFilterFromImagePath(self.image)
+        blur_image = applyBilateralFilterFromImagePath(self.image_path)
+        return blur_image
 
 class FilteringType(enum.Enum):
     gaussian = 'GaussianFilter'
@@ -32,23 +39,76 @@ class FilteringType(enum.Enum):
 
 @dataclasses.dataclass
 class DivideArea:
-    image: np.ndarray
+    blur_image: numpy.ndarray
 
+    @abstractmethod
     def apply_clustering(self):
         pass
 
+@dataclasses.dataclass
 class MorphologicalTransformDivideArea(DivideArea):
     def apply_clustering(self):
-        canny_edge_image = applyCannyEdgeDetectionFromImage(image_path)
+        canny_edge_image = applyCannyEdgeDetectionFromImage(self.blur_image)
         binalize_image = applyBinalizeFilterFromImage(canny_edge_image)
-        return applyMorphologicalTransform(binalize_image)
+        return morphologicalTransformClustering(binalize_image)
 
+@dataclasses.dataclass
 class KMeansClusteringDivideArea(DivideArea):
-    def apply_clustering(self):
-        kMeansClusteringLAB(blur_image)
+    L_weight: int
+    A_weight: int
+    B_weight: int
 
-# from .KMeansCluster import *
-# from .CropTextures import *
+    def apply_clustering(self):
+        return kMeansClusteringLAB(self.blur_image, self.L_weight, self.A_weight, self.B_weight)
+
+class DivideType(enum.Enum):
+    morphological = 'MorphologicalTransformDivideArea'
+    k_means = 'KMeansClusteringDivideArea'
+
+    @classmethod
+    def get_divide_instance(cls, first_step, blur_image):
+        if len(first_step) == 1:
+            return eval(cls[first_step['method']].value)(blur_image)
+        else:
+            L_weight = first_step['L_weight']
+            A_weight = first_step['A_weight']
+            B_weight = first_step['B_weight']
+            return eval(cls[first_step['method']].value)(blur_image, L_weight, A_weight, B_weight)
+
+@dataclasses.dataclass
+class ClusterBrush:
+    input_image: numpy.array
+    cluster_data: numpy.array
+
+    @abstractmethod
+    def apply_clustering(self):
+        pass
+
+@dataclasses.dataclass
+class KMeansClusteringBrushCoordinate(ClusterBrush):
+    def apply_clustering(self):
+        return kMeansClusteringCoordinate(self.input_image, self.cluster_data)
+
+@dataclasses.dataclass
+class KMeansClusteringBrushCoordinateHSV(ClusterBrush):
+    H_weight: int
+    S_weight: int
+
+    def apply_clustering(self):
+        return kMeansClusteringShapeDetection(self.input_image, self.cluster_data, self.H_weight, self.S_weight)
+
+class ClusterBrushType(enum.Enum):
+    coordinate = 'KMeansClusteringBrushCoordinate'
+    coordinateHS = 'KMeansClusteringBrushCoordinateHSV'
+
+    @classmethod
+    def get_cluster_brush_instance(cls, second_step, input_image, cluster_data):
+        if len(second_step) == 1:
+            return eval(cls[second_step['method']].value)(input_image, cluster_data)
+        else:
+            H_weight = second_step['H_weight']
+            S_weight = second_step['S_weight']
+            return eval(cls[second_step['method']].value)(input_image, cluster_data, H_weight, S_weight)
 
 # def applyCannyEdgeAndMorphologicalFilter(image_path):
 #     canny_edge_image = applyCannyEdgeDetectionFromImagePath(image_path)
@@ -101,7 +161,15 @@ def loadCommandLineVariable():
 def main():
     args = loadCommandLineVariable()
     setting_data = loadJSON(args.setting)
-    blur_image = FilteringType.get_filtering_instance(setting_data['filtering'], setting_data['input_image'])
+
+    filteringType = FilteringType.get_filtering_instance(setting_data['filtering'], setting_data['input_image'])
+    blur_image = filteringType.apply_filtering()
+
+    firstStep = DivideType.get_divide_instance(setting_data['first_step'], blur_image)
+    clusters = firstStep.apply_clustering()
+
+    secondStep = ClusterBrushType.get_cluster_brush_instance(setting_data['second_step'], blur_image, clusters)
+    brush_clusters = secondStep.apply_clustering()
 
 
 

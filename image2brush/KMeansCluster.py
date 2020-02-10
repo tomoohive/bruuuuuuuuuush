@@ -9,7 +9,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from .ColorGenerator import rand_color_map
 
-def kMeansClusteringShapeDetection(input_image, splits_clusters):
+def kMeansClusteringShapeDetection(input_image, splits_clusters, h_weight=1, s_weight=1):
     n = 50
     input_shape = input_image.shape
     input_image_hsv = cv2.cvtColor(input_image, cv2.COLOR_BGR2HSV)
@@ -26,8 +26,7 @@ def kMeansClusteringShapeDetection(input_image, splits_clusters):
         coordinate_datum = np.empty((0,2), int)
         for y, split_cluster in enumerate(split_clusters):
             if split_cluster == 0:
-                texture_dot = np.array([[x, y, 3*h[x][y], 3*s[x][y]]])
-                # texture_dot = np.array([[x, y]])
+                texture_dot = np.array([[x, y, h[x][y]*h_weight, s[x][y]*s_weight]])
                 texture_datum = np.append(texture_datum, texture_dot, axis=0)
                 coordinate = np.array([[x, y]])
                 coordinate_datum = np.append(coordinate_datum, coordinate, axis=0)
@@ -56,23 +55,27 @@ def kMeansClusteringShapeDetection(input_image, splits_clusters):
     return cluster_data
 
 
-def kMeansClusteringCoordinate(input_image):
+def kMeansClusteringCoordinate(input_image, splits_clusters):
+    n = 50
     input_shape = input_image.shape
+    texture_data = np.empty((0,2), int)
     coordinate_data = np.empty((0,2), int)
 
-    for index_x, column in enumerate(input_image):
+    for x, split_clusters in enumerate(splits_clusters):
+        texture_datum = np.empty((0,2), int)
         coordinate_datum = np.empty((0,2), int)
-        for index_y, line in enumerate(column):
-            if line == 0:
-                coordinate = np.array([[index_x, index_y]])
+        for y, split_cluster in enumerate(split_clusters):
+            if split_cluster == 0:
+                texture_dot = np.array([[x, y]])
+                texture_datum = np.append(texture_datum, texture_dot, axis=0)
+                coordinate = np.array([[x, y]])
                 coordinate_datum = np.append(coordinate_datum, coordinate, axis=0)
+        texture_data = np.concatenate((texture_data, texture_datum), axis=0)
         coordinate_data = np.concatenate((coordinate_data, coordinate_datum), axis=0)
 
-    print('clustering brushes')
-
-    kmeans = KMeans(n_clusters=100)
-    kmeans.fit(coordinate_data)
-    kmeans_clusters = kmeans.predict(coordinate_data)
+    kmeans = KMeans(n_clusters= n)
+    kmeans.fit(texture_data)
+    kmeans_clusters = kmeans.predict(texture_data)
 
     cluster_data = {}
     for coordinate, cluster in zip(coordinate_data, kmeans_clusters):
@@ -80,7 +83,7 @@ def kMeansClusteringCoordinate(input_image):
             cluster_data[str(cluster)] = []
         cluster_data[str(cluster)].append([int(coordinate[0]), int(coordinate[1])])
 
-    RGB = rand_color_map(0, 255, 100)
+    RGB = rand_color_map(0, 255, n)
     
     cluster_layer = np.zeros(shape=(input_shape[0], input_shape[1], 4), dtype=int)
     for coordinate, color_map in zip(coordinate_data, kmeans_clusters):
@@ -91,15 +94,7 @@ def kMeansClusteringCoordinate(input_image):
 
     return cluster_data
 
-def kMeansClusteringLAB(input_image):
-
-    def split_list(l, n):
-        for idx in range(0, len(l), n):
-            if len(l[idx: idx + n]) == n:
-                yield l[idx: idx + n]
-            else:
-                pass
-
+def kMeansClusteringLAB(input_image, l_weight=1, a_weight=1, b_weight=1):
     input_shape = input_image.shape
     lab_data = np.empty((0,3), int)
     input_image_lab = cv2.cvtColor(input_image, cv2.COLOR_BGR2LAB)
@@ -109,7 +104,7 @@ def kMeansClusteringLAB(input_image):
     for index_x in range(input_image_lab.shape[0]):
         lab_datum = np.empty((0,3), int)
         for index_y in range(input_image_lab.shape[1]):
-            lab = np.array([[l[index_x][index_y], a[index_x][index_y]*5, b[index_x][index_y]*5]])
+            lab = np.array([[l[index_x][index_y]*l_weight, a[index_x][index_y]*a_weight, b[index_x][index_y]*b_weight]])
             lab_datum = np.append(lab_datum, lab, axis=0)
         lab_data = np.concatenate((lab_data, lab_datum), axis=0)
 
@@ -117,17 +112,8 @@ def kMeansClusteringLAB(input_image):
     kmeans.fit(lab_data)
     kmeans_clusters = kmeans.predict(lab_data)
 
-    # RGB = [0,255]
-
-    # splits_clusters = split_list(kmeans_clusters, input_shape[1])
-    # cluster_layer = np.zeros(shape=(input_shape[0], input_shape[1], 1), dtype=int)
-    # for x, split_clusters in enumerate(splits_clusters):
-    #     for y, split_cluster in enumerate(split_clusters):
-    #         cluster_layer[x][y] = np.array(RGB[split_cluster])
-
-    # cv2.imwrite('result/cluster.png', cluster_layer)
-
-    return split_list(kmeans_clusters, input_shape[1])
+    clusters = np.split(kmeans_clusters, int(len(kmeans_clusters)/input_shape[1]))
+    return clusters
 
 def kMeansClusteringHSV(input_image):
 

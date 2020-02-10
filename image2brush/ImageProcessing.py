@@ -2,6 +2,18 @@ import numpy as np
 import cv2
 from .CannyEdgeDetector import *
 
+def morphologicalTransformClustering(binalize_image):
+    image = applyMorphologicalTransform(binalize_image)
+    clusters = []
+    for index_x, column in enumerate(image):
+        cluster = []
+        for index_y, line in enumerate(column):
+            coordinate = 0 if line == 0 else 1
+            cluster.append(coordinate)
+        clusters.append(cluster)
+    return np.array(clusters)
+    
+
 def applyMorphologicalTransform(binalize_image):
     kernel = np.ones((3,3),np.uint8)
     dilation = cv2.dilate(binalize_image, kernel, iterations = 1)
@@ -16,7 +28,8 @@ def applyBinalizeFilterFromImagePath(image_path):
     (thresh, result_image) = cv2.threshold(binalize_image, 0, 255, cv2.THRESH_BINARY)
     return result_image
 
-def applyBinalizeFilterFromImagePath(image):
+def applyBinalizeFilterFromImage(image):
+    image = np.uint8(image)
     binalize_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     (thresh, result_image) = cv2.threshold(binalize_image, 0, 255, cv2.THRESH_BINARY)
     return result_image
