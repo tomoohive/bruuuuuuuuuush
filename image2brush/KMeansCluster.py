@@ -97,8 +97,7 @@ def kMeansClusteringLAB(input_image, l_weight=1, a_weight=1, b_weight=1):
     lab_data = np.empty((0,3), int)
     input_image_lab = cv2.cvtColor(input_image, cv2.COLOR_BGR2LAB)
     l, a, b = cv2.split(input_image_lab)
-
-    print('generate array')
+    
     for index_x in range(input_image_lab.shape[0]):
         lab_datum = np.empty((0,3), int)
         for index_y in range(input_image_lab.shape[1]):

@@ -10,6 +10,7 @@ from .Directory import defineDirectories
 from .ImageProcessing import *
 from .KMeansCluster import *
 from .CropTextures import *
+from .Feathering import *
 
 @dataclasses.dataclass
 class Filtering:
@@ -126,16 +127,23 @@ def main():
     setting_data = loadJSON(args.setting)
     defineDirectories(setting_data['output_dir'])
 
+    print('-> pre step: apply blur filter')
     filteringType = FilteringType.get_filtering_instance(setting_data['filtering'], setting_data['input_image'])
     blur_image = filteringType.apply_filtering()
 
+    print('-> 1st step: divide damaged or non-damaged area')
     firstStep = DivideType.get_divide_instance(setting_data['first_step'], blur_image)
     clusters = firstStep.apply_clustering()
 
+    print('-> 2nd step: clustering brushes to detect shapes')
     secondStep = ClusterBrushType.get_cluster_brush_instance(setting_data['second_step'], blur_image, clusters)
     brush_clusters = secondStep.apply_clustering()
 
+    print('-> final step: crop and feathering')
     extractMaskBoundayAndBrushData(setting_data['input_image'], brush_clusters)
+    applyFeatheringProcessing(setting_data['feathering'])
+
+    print('DONE!!')
 
 if __name__ == '__main__':
     main()
