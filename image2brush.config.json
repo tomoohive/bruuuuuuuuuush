@@ -10,14 +10,14 @@
         "A_weight": 5,
         "B_weight": 5
     },
-    "second_step": {
+    "_second_step": {
         "method": "coordinate"
     },
-    "_second_step": {
+    "second_step": {
         "method": "coordinateHS",
-        "H_weight": 1,
-        "S_weight": 1
+        "H_weight": 3,
+        "S_weight": 3
     },
-    "output_dir": "output",
+    "output_dir": "./output",
     "feathering": 3
 }

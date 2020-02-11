@@ -6,6 +6,7 @@ import numpy
 
 from abc import abstractmethod
 
+from .Directory import defineDirectories
 from .ImageProcessing import *
 from .KMeansCluster import *
 from .CropTextures import *
@@ -110,44 +111,6 @@ class ClusterBrushType(enum.Enum):
             S_weight = second_step['S_weight']
             return eval(cls[second_step['method']].value)(input_image, cluster_data, H_weight, S_weight)
 
-# def applyCannyEdgeAndMorphologicalFilter(image_path):
-#     canny_edge_image = applyCannyEdgeDetectionFromImagePath(image_path)
-#     binalize_image = applyBinalizeFilterFromImagePath(canny_edge_image)
-#     return applyMorphologicalTransform(binalize_image)
-
-# def extractBrushesUsingCoordinateAndKMeansClusering(image_path):
-#     binalize_image = applyCannyEdgeAndMorphologicalFilter(image_path)
-#     cluster_data = kMeansClusteringCoordinate(input_image = binalize_image)
-#     extractMaskBoundayAndBrushData(image_path, cluster_data)
-
-# def extractBrushesUsingLABAndKMeansClusering(image_path):
-#     blur_image = applyGaussianFilterFromImagePath(image_path, 5)
-#     kMeansClusteringLAB(blur_image)
-
-# def extractBrushesUsingHSVAndKMeansClusering(image_path):
-#     blur_image = applyGaussianFilterFromImagePath(image_path, 15)
-#     cluster_layer = kMeansClusteringHSV(blur_image)
-#     cluster_data = kMeansClusteringCoordinate(input_image = cluster_layer)
-#     extractMaskBoundayAndBrushData(image_path, cluster_data)
-
-# def extractBrushesUsingYUVAndKMeansClusering(image_path):
-#     blur_image = applyGaussianFilterFromImagePath(image_path, 15)
-#     kMeansClusteringYUV(blur_image)
-    
-# def extractBrushesUsingHLSAndKMeansClusering(image_path):
-#     blur_image = applyGaussianFilterFromImagePath(image_path, 15)
-#     kMeansClusteringHLS(blur_image)
-
-# def extractBrushesUsingXYZAndKMeansClusering(image_path):
-#     blur_image = applyGaussianFilterFromImagePath(image_path, 15)
-#     kMeansClusteringXYZ(blur_image)
-
-# def extractBrushesUsingBilateralLABAndKMeansClustering(image_path):
-#     blur_image = applyBilateralFilterFromImagePath(image_path)
-#     clusters = kMeansClusteringLAB(blur_image)
-#     cluster_data = kMeansClusteringShapeDetection(blur_image, clusters)
-#     extractMaskBoundayAndBrushData(image_path, cluster_data)
-
 def loadJSON(file_path):
     f = open(file_path, "r")
     json_data = json.load(f)
@@ -161,6 +124,7 @@ def loadCommandLineVariable():
 def main():
     args = loadCommandLineVariable()
     setting_data = loadJSON(args.setting)
+    defineDirectories(setting_data['output_dir'])
 
     filteringType = FilteringType.get_filtering_instance(setting_data['filtering'], setting_data['input_image'])
     blur_image = filteringType.apply_filtering()
@@ -171,7 +135,7 @@ def main():
     secondStep = ClusterBrushType.get_cluster_brush_instance(setting_data['second_step'], blur_image, clusters)
     brush_clusters = secondStep.apply_clustering()
 
-
+    extractMaskBoundayAndBrushData(setting_data['input_image'], brush_clusters)
 
 if __name__ == '__main__':
     main()
