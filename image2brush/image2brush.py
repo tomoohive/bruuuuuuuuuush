@@ -9,8 +9,11 @@ from abc import abstractmethod
 from .Directory import defineDirectories
 from .ImageProcessing import *
 from .KMeansCluster import *
+from .DBSCANCluster import *
 from .CropTextures import *
 from .Feathering import *
+
+from .config import Settings
 
 @dataclasses.dataclass
 class Filtering:
@@ -99,9 +102,18 @@ class KMeansClusteringBrushCoordinateHSV(ClusterBrush):
     def apply_clustering(self):
         return kMeansClusteringShapeDetection(self.input_image, self.cluster_data, self.H_weight, self.S_weight)
 
+@dataclasses.dataclass
+class DBSCANClusteringBrushCoordinateHSV(ClusterBrush):
+    H_weight: int
+    S_weight: int
+
+    def apply_clustering(self):
+        return dbscanClusteringShapeDetectionHSV(self.input_image, self.cluster_data, self.H_weight, self.S_weight)
+
 class ClusterBrushType(enum.Enum):
     coordinate = 'KMeansClusteringBrushCoordinate'
     coordinateHS = 'KMeansClusteringBrushCoordinateHSV'
+    dbscanHS = 'DBSCANClusteringBrushCoordinateHSV'
 
     @classmethod
     def get_cluster_brush_instance(cls, second_step, input_image, cluster_data):
@@ -112,36 +124,24 @@ class ClusterBrushType(enum.Enum):
             S_weight = second_step['S_weight']
             return eval(cls[second_step['method']].value)(input_image, cluster_data, H_weight, S_weight)
 
-def loadJSON(file_path):
-    f = open(file_path, "r")
-    json_data = json.load(f)
-    return json_data
-
-def loadCommandLineVariable():
-    parser = argparse.ArgumentParser(description='This is a script of getting brushes from image.')
-    parser.add_argument('--setting', type=str, required=True)
-    return parser.parse_args()
-
 def main():
-    args = loadCommandLineVariable()
-    setting_data = loadJSON(args.setting)
-    defineDirectories(setting_data['output_dir'])
+    defineDirectories(Settings().read_value("output_dir"))
 
     print('-> pre step: apply blur filter')
-    filteringType = FilteringType.get_filtering_instance(setting_data['filtering'], setting_data['input_image'])
+    filteringType = FilteringType.get_filtering_instance(Settings().read_value('filtering'), Settings().read_value('input_image'))
     blur_image = filteringType.apply_filtering()
 
     print('-> 1st step: divide damaged or non-damaged area')
-    firstStep = DivideType.get_divide_instance(setting_data['first_step'], blur_image)
+    firstStep = DivideType.get_divide_instance(Settings().read_value('first_step'), blur_image)
     clusters = firstStep.apply_clustering()
 
     print('-> 2nd step: clustering brushes to detect shapes')
-    secondStep = ClusterBrushType.get_cluster_brush_instance(setting_data['second_step'], blur_image, clusters)
+    secondStep = ClusterBrushType.get_cluster_brush_instance(Settings().read_value('second_step'), blur_image, clusters)
     brush_clusters = secondStep.apply_clustering()
 
     print('-> final step: crop and feathering')
-    extractMaskBoundayAndBrushData(setting_data['input_image'], brush_clusters)
-    applyFeatheringProcessing(setting_data['feathering'])
+    extractMaskBoundayAndBrushData(Settings().read_value('input_image'), brush_clusters)
+    applyFeatheringProcessing(Settings().read_value('feathering'))
 
     print('DONE!!')
 

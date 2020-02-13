@@ -1,9 +1,12 @@
 import numpy as np
 import cv2
 
-from .Directory import MASK_CROP_DATA_DIRECTORY, BRUSH_CROP_DATA_DIRECTORY
+from .config import Settings
 
 def extractMaskBoundayAndBrushData(input_path, cluster_data):
+    MASK_CROP_DATA_DIRECTORY = Settings().get_mask_crop_data_directory()
+    BRUSH_CROP_DATA_DIRECTORY = Settings().get_brush_crop_data_directory()
+
     r, g, b = cv2.split(cv2.imread(input_path))
     image_shape = r.shape
     for index, cluster_index in enumerate(cluster_data):

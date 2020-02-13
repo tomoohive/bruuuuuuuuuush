@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 from .CannyEdgeDetector import *
-from .Directory import OUTPUT_DIRECTORY
+from .config import Settings
 
 def morphologicalTransformClustering(binalize_image):
     image = applyMorphologicalTransform(binalize_image)
@@ -21,7 +21,7 @@ def applyMorphologicalTransform(binalize_image):
     dilation = cv2.dilate(binalize_image, kernel, iterations = 1)
     opening = cv2.morphologyEx(dilation, cv2.MORPH_OPEN, kernel)
     closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
-    cv2.imwrite(OUTPUT_DIRECTORY + '/morpho.png', closing)
+    cv2.imwrite(Settings().read_value("output_dir") + '/morpho.png', closing)
     return closing
 
 def applyBinalizeFilterFromImagePath(image_path):
@@ -48,7 +48,7 @@ def applyCannyEdgeDetectionFromImage(image):
     detector = CannyEdgeDetector(image, sigma=1.4, kernel_size=5, lowthreshold=0.09, highthreshold=0.19, weak_pixel=100)
     imgs_final = detector.detect()
     image = np.array(imgs_final)
-    cv2.imwrite(OUTPUT_DIRECTORY + '/CannyEdge.png', image)
+    cv2.imwrite(Settings().read_value("output_dir") + '/CannyEdge.png', image)
     return image
 
 def applyCannyEdgeDetectionCVFromImagePath(image_path):
@@ -59,10 +59,10 @@ def applyCannyEdgeDetectionCVFromImagePath(image_path):
 
 def applyGaussianFilterFromImagePath(image_path, kernel):
     blur = cv2.GaussianBlur(cv2.imread(image_path),(kernel,kernel),0)
-    cv2.imwrite(OUTPUT_DIRECTORY + '/gaussian.png', blur)
+    cv2.imwrite(Settings().read_value("output_dir") + '/gaussian.png', blur)
     return blur
 
 def applyBilateralFilterFromImagePath(image_path):
     blur = cv2.bilateralFilter(cv2.imread(image_path), 9, 75, 75)
-    cv2.imwrite(OUTPUT_DIRECTORY + '/bilateral.png', blur)
+    cv2.imwrite(Settings().read_value("output_dir") + '/bilateral.png', blur)
     return blur

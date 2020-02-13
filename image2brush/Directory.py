@@ -1,20 +1,15 @@
 import os
 import shutil
 
-OUTPUT_DIRECTORY = './output'
-MASK_CROP_DATA_DIRECTORY = OUTPUT_DIRECTORY + '/mask_crop_data'
-BRUSH_CROP_DATA_DIRECTORY = OUTPUT_DIRECTORY + '/brush_crop_data'
-FEATHERING_DATA_DIRECTORY = OUTPUT_DIRECTORY + '/feathering'
+from .config import Settings
 
 def makeDirectories():
-    os.makedirs(OUTPUT_DIRECTORY)
-    os.makedirs(MASK_CROP_DATA_DIRECTORY)
-    os.makedirs(BRUSH_CROP_DATA_DIRECTORY)
-    os.makedirs(FEATHERING_DATA_DIRECTORY)
+    os.makedirs(Settings().read_value("output_dir"))
+    os.makedirs(Settings().get_mask_crop_data_directory())
+    os.makedirs(Settings().get_brush_crop_data_directory())
+    os.makedirs(Settings().get_feathering_directory())
 
 def defineDirectories(output_path):
-    OUTPUT_DIRECTORY = output_path
-    
-    if os.path.isdir(OUTPUT_DIRECTORY):
-        shutil.rmtree(OUTPUT_DIRECTORY)
+    if os.path.isdir(output_path):
+        shutil.rmtree(output_path)
     makeDirectories()

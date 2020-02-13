@@ -10,7 +10,7 @@
         "A_weight": 5,
         "B_weight": 5
     },
-    "_second_step": {
+    "__second_step": {
         "method": "coordinate"
     },
     "second_step": {
@@ -18,6 +18,11 @@
         "H_weight": 3,
         "S_weight": 3
     },
-    "output_dir": "./output",
+    "_second_step": {
+        "method": "dbscanHS",
+        "H_weight": 1,
+        "S_weight": 1
+    },
+    "output_dir": "./DBSCAN_output",
     "feathering": 3
 }

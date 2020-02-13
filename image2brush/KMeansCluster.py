@@ -2,11 +2,9 @@ import numpy as np
 import cv2
 
 from sklearn.cluster import KMeans
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 
 from .ColorGenerator import rand_color_map
-from .Directory import OUTPUT_DIRECTORY
+from .config import Settings
 
 def kMeansClusteringShapeDetection(input_image, splits_clusters, h_weight=1, s_weight=1):
     n = 50
@@ -47,11 +45,10 @@ def kMeansClusteringShapeDetection(input_image, splits_clusters, h_weight=1, s_w
     for coordinate, color_map in zip(coordinate_data, kmeans_clusters):
         rgb = RGB[color_map - 1]
         cluster_layer[coordinate[0]][coordinate[1]] = np.array([rgb[0], rgb[1], rgb[2], 255])
-    cv2.imwrite(OUTPUT_DIRECTORY + '/mask.png', cluster_layer[:,:,:3])
-    cv2.imwrite(OUTPUT_DIRECTORY + '/layer.png', cluster_layer)
+    cv2.imwrite(Settings().read_value("output_dir") + '/mask.png', cluster_layer[:,:,:3])
+    cv2.imwrite(Settings().read_value("output_dir") + '/layer.png', cluster_layer)
 
     return cluster_data
-
 
 def kMeansClusteringCoordinate(input_image, splits_clusters):
     n = 50
@@ -87,8 +84,8 @@ def kMeansClusteringCoordinate(input_image, splits_clusters):
     for coordinate, color_map in zip(coordinate_data, kmeans_clusters):
         rgb = RGB[color_map - 1]
         cluster_layer[coordinate[0]][coordinate[1]] = np.array([rgb[0], rgb[1], rgb[2], 255])
-    cv2.imwrite(OUTPUT_DIRECTORY + '/mask.png', cluster_layer[:,:,:3])
-    cv2.imwrite(OUTPUT_DIRECTORY + '/layer.png', cluster_layer)
+    cv2.imwrite(Settings().read_value("output_dir") + '/mask.png', cluster_layer[:,:,:3])
+    cv2.imwrite(Settings().read_value("output_dir") + '/layer.png', cluster_layer)
 
     return cluster_data
 
