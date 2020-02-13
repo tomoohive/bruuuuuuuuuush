@@ -13,15 +13,15 @@
     "__second_step": {
         "method": "coordinate"
     },
-    "second_step": {
+    "_second_step": {
         "method": "coordinateHS",
         "H_weight": 3,
         "S_weight": 3
     },
-    "_second_step": {
+    "second_step": {
         "method": "dbscanHS",
-        "H_weight": 1,
-        "S_weight": 1
+        "H_weight": 3,
+        "S_weight": 3
     },
     "output_dir": "./DBSCAN_output",
     "feathering": 3

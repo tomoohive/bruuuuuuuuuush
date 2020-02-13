@@ -19,5 +19,8 @@ def extractMaskBoundayAndBrushData(input_path, cluster_data):
             x, y =  coordinate[0], coordinate[1]
             mask_layer[x][y] = np.array([255, 255, 255])
             brush_layer[x][y] = np.array([r[x][y], g[x][y], b[x][y], 255])
-        cv2.imwrite(MASK_CROP_DATA_DIRECTORY + '/mask_crop' + str(index) + '.png', mask_layer[int(xy_min[0]):int(xy_max[0]), int(xy_min[1]):int(xy_max[1])])
-        cv2.imwrite(BRUSH_CROP_DATA_DIRECTORY + '/brush_crop' + str(index) + '.png', brush_layer[int(xy_min[0]):int(xy_max[0]), int(xy_min[1]):int(xy_max[1])])
+        try:
+            cv2.imwrite(MASK_CROP_DATA_DIRECTORY + '/mask_crop' + str(index) + '.png', mask_layer[int(xy_min[0]):int(xy_max[0]), int(xy_min[1]):int(xy_max[1])])
+            cv2.imwrite(BRUSH_CROP_DATA_DIRECTORY + '/brush_crop' + str(index) + '.png', brush_layer[int(xy_min[0]):int(xy_max[0]), int(xy_min[1]):int(xy_max[1])])
+        except:
+            pass

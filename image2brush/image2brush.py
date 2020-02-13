@@ -3,6 +3,7 @@ import json
 import dataclasses
 import enum
 import numpy
+import cv2
 
 from abc import abstractmethod
 
@@ -136,7 +137,7 @@ def main():
     clusters = firstStep.apply_clustering()
 
     print('-> 2nd step: clustering brushes to detect shapes')
-    secondStep = ClusterBrushType.get_cluster_brush_instance(Settings().read_value('second_step'), blur_image, clusters)
+    secondStep = ClusterBrushType.get_cluster_brush_instance(Settings().read_value('second_step'), cv2.imread(Settings().read_value('input_image')), clusters)
     brush_clusters = secondStep.apply_clustering()
 
     print('-> final step: crop and feathering')
