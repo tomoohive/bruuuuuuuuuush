@@ -6,7 +6,14 @@ import matplotlib
 matplotlib.use('Tkagg')
 import matplotlib.pyplot as plt
 
-img = io.imread("input.png")
+
+"""
+1. superpixel適用
+2. 分割マスクデータ出力
+3. 実際の結果出力
+"""
+
+img = io.imread("algae.jpg")
 
 felzen_segments = felzenszwalb(img)
 quick_segments = quickshift(img)
@@ -32,4 +39,5 @@ plt.subplot(2, 2, 4)
 plt.title("watershed")
 plt.imshow(mark_boundaries(img,water_segments))
 
+plt.savefig('algae_result.png')
 plt.show()

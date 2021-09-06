@@ -10,3 +10,4 @@ mask_data
 crop_mask_data
 __pycache__
 heritage
+.DS_Store
