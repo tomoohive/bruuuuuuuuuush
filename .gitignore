@@ -1,3 +1,4 @@
+!input.png
 *.png
 *.jpg
 *.PNG
@@ -11,3 +12,4 @@ crop_mask_data
 __pycache__
 heritage
 .DS_Store
+.vscode
